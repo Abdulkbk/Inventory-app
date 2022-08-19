@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User, UserDocument } from 'src/database/schemas/user.schema';
+import { UserDTO, UserSignInDTO } from 'src/users/dto/users';
+import { User, UserDocument } from 'src/users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -10,27 +9,31 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    @InjectModel(User.name) private usersModel: Model<UserDocument>,
   ) {}
 
-  async validateUser(username: string, password: string) {
-    const user = await this.usersService.findOne(username);
-    if (user && user.password === password) {
-      const { password, ...rest } = user;
-      return rest;
+  async validateUser(email: string, password: string): Promise<any> {
+    const userFound = await this.usersService.getUserByEmail(email);
+
+    if (userFound && userFound.password === password) {
+      console.log(userFound.password);
+
+      return userFound;
     }
     return null;
   }
 
-  async login(user: any) {
-    const payload = { username: user.username, sub: user.userId };
+  async signin(user: any) {
+    const payload = { name: user.name, id: user.id };
+
+    user.password = '';
+
     return {
       access_token: this.jwtService.sign(payload),
+      user: user,
     };
   }
 
-  async signup(user: any): Promise<User> {
-    const createdUser = new this.usersModel(user);
-    return createdUser.save();
+  async signup(user: UserDTO): Promise<User> {
+    return this.usersService.createUser(user);
   }
 }
