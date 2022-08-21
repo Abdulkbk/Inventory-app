@@ -12,6 +12,9 @@ export class Product {
   @Prop({ required: true })
   name: string;
 
+  @Prop({ required: true })
+  prize: number;
+
   @Prop()
   description: string;
 

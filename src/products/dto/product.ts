@@ -1,6 +1,7 @@
 class ProductDTO {
   name: string;
-  description: string;
+  prize: number;
+  description?: string;
   tags?: [string];
 }
 
